@@ -25,7 +25,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/venusgalstar/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 func GenerateAI(tx *types.Transaction, msg *Message) {
