@@ -42,3 +42,5 @@ profile.cov
 .vscode
 
 tests/spec-tests/
+
+.env
