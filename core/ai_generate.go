@@ -44,7 +44,7 @@ func GenerateAI(tx *types.Transaction) (string, error) {
 		AI_SERVER_URL = "http://127.0.0.1:3000"
 	}
 
-	url:= AI_SERVER_URL + "/generate"
+	url:= AI_SERVER_URL
 
 	to := ""
 	if tx.To() != nil {
@@ -68,11 +68,12 @@ func GenerateAI(tx *types.Transaction) (string, error) {
 	}
 
 	// Create a context with timeout to avoid hanging indefinitely
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	// ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// defer cancel()
 
 	// Create an HTTP request with the context
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(jsonData))
+	// req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return "", fmt.Errorf("AI error creating HTTP request: %w", err)
 	}
