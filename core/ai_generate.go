@@ -18,14 +18,12 @@ package core
 
 import (
 	"bytes"         // Added import for bytes
-	"context"
 	"encoding/json" // Added import for json
    	"fmt"
     "io"
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
