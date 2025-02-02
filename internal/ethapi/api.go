@@ -1136,8 +1136,6 @@ func newRPCTransaction(tx *types.Transaction, blockHash common.Hash, blockNumber
 	from, _ := types.Sender(signer, tx)
 	v, r, s := tx.RawSignatureValues()
 
-	// inscription := core.GetGenerated(tx.Hash().Hex())
-
 	result := &RPCTransaction{
 		Type:     hexutil.Uint64(tx.Type()),
 		From:     from,
@@ -1510,7 +1508,6 @@ func marshalReceipt(receipt *types.Receipt, blockHash common.Hash, blockNumber u
 	from, _ := types.Sender(signer, tx)
 
 	// lightchain modify
-	// inscription := core.GetGenerated(tx.Hash().Hex())
 
 	fields := map[string]interface{}{
 		"blockHash":         blockHash,
@@ -1526,9 +1523,8 @@ func marshalReceipt(receipt *types.Receipt, blockHash common.Hash, blockNumber u
 		"logsBloom":         receipt.Bloom,
 		"type":              hexutil.Uint(tx.Type()),
 		"effectiveGasPrice": (*hexutil.Big)(receipt.EffectiveGasPrice),
-		"inscription": (string)(tx.Inscription()),
 		// lightchain modify
-		// "inscription": 		 hexutil.Bytes(inscription),
+		"inscription": (string)(tx.Inscription()),
 	}
 
 	// Assign receipt status or post state.

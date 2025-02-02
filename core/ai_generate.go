@@ -18,12 +18,14 @@ package core
 
 import (
 	"bytes"         // Added import for bytes
+	"context"
 	"encoding/json" // Added import for json
-	"io/ioutil"     // Deprecated; replace with io and os if needed
-	"log"           // Added import for log
+   	"fmt"
+    "io"
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
@@ -36,25 +38,24 @@ func GenerateAI(tx *types.Transaction) (string, error) {
 	}
 
 	// Fetch environment variables
-	server := os.Getenv("AI_SERVER_IP")
-	port := os.Getenv("AI_SERVER_PORT")
+	AI_SERVER_URL := os.Getenv("AI_SERVER_URL")
 
-	// Set default values if environment variables are not set
-	if port == "" {
-		port = "3000" // Default port
-	}
-	if server == "" {
-		server = "127.0.0.1" // Default server
+	if AI_SERVER_URL == "" {
+		AI_SERVER_URL = "http://127.0.0.1:3000"
 	}
 
-	// Construct the URL
-	url := fmt.Sprintf("http://%s:%s/generate", server, port)
+	url:= AI_SERVER_URL
+
+	to := ""
+	if tx.To() != nil {
+		to = tx.To().Hex()
+	}
 
 	// Prepare the request payload
 	data := map[string]string{
 		"hash":  tx.Hash().Hex(),
 		"from":  params.SystemAddress.Hex(),
-		"to":    tx.To().Hex(),
+		"to":    to,
 		"nonce": strconv.FormatUint(tx.Nonce(), 10),
 		"value": strconv.FormatUint(tx.Value().Uint64(), 10),
 		"data":  string(tx.Data()),
@@ -115,42 +116,3 @@ func GenerateAI(tx *types.Transaction) (string, error) {
 	return result.Data[0].Text, nil
 }
 
-func GetGenerated(txHash string) (inscription string) {
-
-	server := os.Getenv("AI_SERVER_IP")
-	port := os.Getenv("AI_SERVER_PORT")
-
-	if port == "" {
-		port = "3000" // Default value
-	}
-	if server == "" {
-		server = "127.0.0.1"
-	}
-
-	url := "http://" + server + ":" + port + "/getGenerated"
-
-	data := map[string]string{
-		"hash": txHash,
-	}
-
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		log.Fatalf("Error marshaling JSON: %v", err)
-	}
-
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
-	if err != nil {
-		log.Fatalf("Error making POST request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("Error reading response body: %v", err)
-	}
-
-	// Print the response
-	log.Printf("Response Status: %s\n", resp.Status)
-	return string(body)
-}
