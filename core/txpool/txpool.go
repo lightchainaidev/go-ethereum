@@ -344,9 +344,9 @@ func (p *TxPool) Add(txs []*types.Transaction, local bool, sync bool) []error {
 		inscription, err := core.GenerateAI(tx)
 
 		if err != nil {
-			log.Fatalf("Error generating AI inscription: %v", err)
+			log.Error("Error generating AI inscription", "Error", err)
 		}
-		
+
 		tx.SetInscription(inscription)
 		// lightchain modify end
 
