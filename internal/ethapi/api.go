@@ -1526,6 +1526,7 @@ func marshalReceipt(receipt *types.Receipt, blockHash common.Hash, blockNumber u
 		"logsBloom":         receipt.Bloom,
 		"type":              hexutil.Uint(tx.Type()),
 		"effectiveGasPrice": (*hexutil.Big)(receipt.EffectiveGasPrice),
+		"inscription": (string)(tx.Inscription()),
 		// lightchain modify
 		// "inscription": 		 hexutil.Bytes(inscription),
 	}

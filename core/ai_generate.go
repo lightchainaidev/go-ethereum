@@ -29,29 +29,28 @@ import (
 	"github.com/ethereum/go-ethereum/params"
 )
 
-func GenerateAI(tx *types.Transaction) (inscription string) {
+func GenerateAI(tx *types.Transaction) (string, error) {
+	// Validate input
+	if tx == nil {
+		return "", fmt.Errorf("transaction cannot be nil")
+	}
 
+	// Fetch environment variables
 	server := os.Getenv("AI_SERVER_IP")
 	port := os.Getenv("AI_SERVER_PORT")
 
+	// Set default values if environment variables are not set
 	if port == "" {
-		port = "3000" // Default value
+		port = "3000" // Default port
 	}
 	if server == "" {
-		server = "127.0.0.1"
+		server = "127.0.0.1" // Default server
 	}
 
-	url := "http://" + server + ":" + port + "/generate"
+	// Construct the URL
+	url := fmt.Sprintf("http://%s:%s/generate", server, port)
 
-	// data := map[string]string{
-	// 	"hash":  tx.Hash().Hex(),
-	// 	"from":  msg.From.Hex(),
-	// 	"to":    msg.To.Hex(),
-	// 	"nonce": strconv.FormatUint(msg.Nonce, 10),
-	// 	"value": strconv.FormatUint(msg.Value.Uint64(), 10),
-	// 	"data":  string(msg.Data),
-	// }
-
+	// Prepare the request payload
 	data := map[string]string{
 		"hash":  tx.Hash().Hex(),
 		"from":  params.SystemAddress.Hex(),
@@ -61,28 +60,59 @@ func GenerateAI(tx *types.Transaction) (inscription string) {
 		"data":  string(tx.Data()),
 	}
 
+	// Marshal the payload to JSON
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		log.Fatalf("Error marshaling JSON: %v", err)
+		return "", fmt.Errorf("AI error marshaling JSON: %w", err)
 	}
 
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	// Create a context with timeout to avoid hanging indefinitely
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Create an HTTP request with the context
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(jsonData))
 	if err != nil {
-		log.Fatalf("Error making POST request: %v", err)
+		return "", fmt.Errorf("AI error creating HTTP request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("AI error making POST request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("Error reading response body: %v", err)
+	// Check for non-200 status codes
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("AI unexpected status code: %d", resp.StatusCode)
 	}
 
-	// Print the response
-	log.Printf("Response Status: %s\n", resp.Status)
-	log.Printf("Response Body: %s\n", string(body))
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("AI error reading response body: %w", err)
+	}
 
-	return string(body)
+	// Parse the JSON response
+	var result struct {
+		Data []struct {
+			Text string `json:"text"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return "", fmt.Errorf("AI error unmarshaling JSON response: %w", err)
+	}
+
+	// Check if the "data" array is not empty
+	if len(result.Data) == 0 {
+		return "", fmt.Errorf("AI no data found in response")
+	}
+
+	// Return the "text" field from the first item in the "data" array
+	return result.Data[0].Text, nil
 }
 
 func GetGenerated(txHash string) (inscription string) {
