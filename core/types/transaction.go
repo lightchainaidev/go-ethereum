@@ -302,6 +302,20 @@ func (tx *Transaction) Value() *big.Int { return new(big.Int).Set(tx.inner.value
 // Nonce returns the sender account nonce of the transaction.
 func (tx *Transaction) Nonce() uint64 { return tx.inner.nonce() }
 
+// lightchain modify start
+// Inscription returns the inscription of the transaction.
+func (tx *Transaction) Inscription() string {
+	if tx.Type() == DynamicFeeTxType {
+		// Safely cast the inner TxData to *DynamicFeeTx
+		if dynamicFeeTx, ok := tx.inner.(*DynamicFeeTx); ok {
+			// Set the Inscription field
+			return dynamicFeeTx.Inscription
+		}
+	}
+	return ""
+}
+// lightchain modify end
+
 // To returns the recipient address of the transaction.
 // For contract-creation transactions, To returns nil.
 func (tx *Transaction) To() *common.Address {
@@ -542,6 +556,23 @@ func (tx *Transaction) WithSignature(signer Signer, sig []byte) (*Transaction, e
 	cpy.setSignatureValues(signer.ChainID(), v, r, s)
 	return &Transaction{inner: cpy, time: tx.time}, nil
 }
+
+// lightchain modify start
+// Set Inscription Field
+func (tx *Transaction) SetInscription(inscription string) (error) {
+	if tx.Type() == DynamicFeeTxType {
+		// Safely cast the inner TxData to *DynamicFeeTx
+		if dynamicFeeTx, ok := tx.inner.(*DynamicFeeTx); ok {
+			// Set the Inscription field
+			if dynamicFeeTx.Inscription == ""  {
+				// Set the Inscription field if it is not already set
+				dynamicFeeTx.Inscription = inscription
+			}
+		}
+	}
+	return nil	
+}
+// lightchain modify end
 
 // Transactions implements DerivableList for transactions.
 type Transactions []*Transaction

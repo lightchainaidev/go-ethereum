@@ -230,7 +230,8 @@ type txExtraInfo struct {
 	BlockNumber *string         `json:"blockNumber,omitempty"`
 	BlockHash   *common.Hash    `json:"blockHash,omitempty"`
 	From        *common.Address `json:"from,omitempty"`
-	Inscription *string			`json:"inscription,omitempty"`
+	// lightchain modify
+	// Inscription *string			`json:"inscription,omitempty"`
 }
 
 func (tx *rpcTransaction) UnmarshalJSON(msg []byte) error {

@@ -915,7 +915,7 @@ func DoCall(ctx context.Context, b Backend, args TransactionArgs, blockNrOrHash 
 // Note, this function doesn't make and changes in the state/blockchain and is
 // useful to execute and retrieve values.
 func (api *BlockChainAPI) Call(ctx context.Context, args TransactionArgs, blockNrOrHash *rpc.BlockNumberOrHash, overrides *StateOverride, blockOverrides *BlockOverrides) (hexutil.Bytes, error) {
-	if blockNrOrHash == nil {
+	if blockNrOrHash == nil {	
 		latest := rpc.BlockNumberOrHashWithNumber(rpc.LatestBlockNumber)
 		blockNrOrHash = &latest
 	}
@@ -1125,7 +1125,8 @@ type RPCTransaction struct {
 	R                   *hexutil.Big      `json:"r"`
 	S                   *hexutil.Big      `json:"s"`
 	YParity             *hexutil.Uint64   `json:"yParity,omitempty"`
-	Inscription         hexutil.Bytes	  `json:"inscription"`
+	// Inscription         hexutil.Bytes	  `json:"inscription"` // lightchain modify
+	Inscription         string			  `json:"inscription"` // lightchain modify
 }
 
 // newRPCTransaction returns a transaction that will serialize to the RPC
@@ -1134,7 +1135,9 @@ func newRPCTransaction(tx *types.Transaction, blockHash common.Hash, blockNumber
 	signer := types.MakeSigner(config, new(big.Int).SetUint64(blockNumber), blockTime)
 	from, _ := types.Sender(signer, tx)
 	v, r, s := tx.RawSignatureValues()
-	inscription := core.GetGenerated(tx.Hash().Hex())
+
+	// inscription := core.GetGenerated(tx.Hash().Hex())
+
 	result := &RPCTransaction{
 		Type:     hexutil.Uint64(tx.Type()),
 		From:     from,
@@ -1148,7 +1151,7 @@ func newRPCTransaction(tx *types.Transaction, blockHash common.Hash, blockNumber
 		V:        (*hexutil.Big)(v),
 		R:        (*hexutil.Big)(r),
 		S:        (*hexutil.Big)(s),
-		Inscription: hexutil.Bytes(inscription),
+		Inscription: (string)(tx.Inscription()),
 	}
 	if blockHash != (common.Hash{}) {
 		result.BlockHash = &blockHash
@@ -1506,7 +1509,8 @@ func (api *TransactionAPI) GetTransactionReceipt(ctx context.Context, hash commo
 func marshalReceipt(receipt *types.Receipt, blockHash common.Hash, blockNumber uint64, signer types.Signer, tx *types.Transaction, txIndex int) map[string]interface{} {
 	from, _ := types.Sender(signer, tx)
 
-	inscription := core.GetGenerated(tx.Hash().Hex())
+	// lightchain modify
+	// inscription := core.GetGenerated(tx.Hash().Hex())
 
 	fields := map[string]interface{}{
 		"blockHash":         blockHash,
@@ -1522,7 +1526,8 @@ func marshalReceipt(receipt *types.Receipt, blockHash common.Hash, blockNumber u
 		"logsBloom":         receipt.Bloom,
 		"type":              hexutil.Uint(tx.Type()),
 		"effectiveGasPrice": (*hexutil.Big)(receipt.EffectiveGasPrice),
-		"inscription": 		 hexutil.Bytes(inscription),
+		// lightchain modify
+		// "inscription": 		 hexutil.Bytes(inscription),
 	}
 
 	// Assign receipt status or post state.

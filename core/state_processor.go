@@ -216,7 +216,8 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 		return nil, err
 	}
 
-	GenerateAI(tx, msg);
+	// lightchain modify
+	// GenerateAI(tx, msg);
 	
 	// Create a new context to be used in the EVM environment
 	blockContext := NewEVMBlockContext(header, bc, author)

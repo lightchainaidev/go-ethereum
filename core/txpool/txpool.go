@@ -339,6 +339,13 @@ func (p *TxPool) Add(txs []*types.Transaction, local bool, sync bool) []error {
 		// Mark this transaction belonging to no-subpool
 		splits[i] = -1
 
+		// lightchain modify start
+		// Check if the transaction is of type DynamicFeeTxType
+		inscription := core.GenerateAI(tx)
+		tx.SetInscription(inscription)
+		// lightchain modify end
+
+
 		// Try to find a subpool that accepts the transaction
 		for j, subpool := range p.subpools {
 			if subpool.Filter(tx) {
