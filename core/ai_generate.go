@@ -42,7 +42,7 @@ func GenerateAI(tx *types.Transaction) (string, error) {
 		AI_SERVER_URL = "http://127.0.0.1:3000"
 	}
 
-	url:= AI_SERVER_URL
+	url:= AI_SERVER_URL + "/generate"
 
 	to := ""
 	if tx.To() != nil {
