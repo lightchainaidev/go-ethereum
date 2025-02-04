@@ -341,13 +341,13 @@ func (p *TxPool) Add(txs []*types.Transaction, local bool, sync bool) []error {
 
 		// lightchain modify start
 		// Check if the transaction is of type DynamicFeeTxType
-		inscription, err := core.GenerateAI(tx)
+		// inscription, err := core.GenerateAI(tx)
 
-		if err != nil {
-			log.Error("Error generating AI inscription", "Error", err)
-		}
+		// if err != nil {
+		// 	log.Error("Error generating AI inscription", "Error", err)
+		// }
 
-		tx.SetInscription(inscription)
+		// tx.SetInscription(inscription)
 		// lightchain modify end
 
 
